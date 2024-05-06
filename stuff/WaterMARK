@@ -1,0 +1,134 @@
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local StarterGui = game:GetService("StarterGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local Stats = game:GetService("Stats")
+
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local Camera = Workspace.CurrentCamera
+
+local tableFind = table.find
+local tableClear = table.clear
+local stringSub = string.sub
+local stringUpper = string.upper
+local stringLower = string.lower
+local tableInsert = table.insert
+local mathHuge = math.huge
+local mathPi = math.pi
+local mathClamp = math.clamp
+local mathRound = math.round
+local mathAbs = math.abs
+local mathFloor = math.floor
+local mathRandom = math.random
+local mathSin = math.sin
+local mathCos = math.cos
+local mathRad = math.rad
+local mathHalfPi = math.pi / 2
+
+local coroutineCreate = coroutine.create
+local coroutineResume = coroutine.resume
+local taskSpawn = task.spawn
+local taskWait = task.wait
+
+local Vector2_new = Vector2.new
+local Vector3_new = Vector3.new
+local CFrame_new = CFrame.new
+local Color3_fromRGB = Color3.fromRGB
+local Color3_fromHex = Color3.fromHex
+
+local Instance_new = Instance.new
+
+local function newDrawing(Type, Properties)
+    local DrawingInstance = Drawing.new(Type)
+    if Properties then
+        for Property, Value in next, Properties do
+            DrawingInstance[Property] = Value
+        end
+    end
+    return DrawingInstance
+end
+
+local UI = {
+    Position = {100, 100},
+    Drawings = {
+        Outline = newDrawing("Square", {Size = Vector2_new(300, 20), Position = Vector2_new(1496, 100), Color = Color3_fromRGB(0, 0, 0), Filled = true, Visible = false}),
+        Inline = newDrawing("Square", {Size = Vector2_new(1, 1), Position = Vector2_new(1, 1), Color = Color3_fromRGB(50, 50, 50), Filled = true, Visible = false}),
+        Frame = newDrawing("Image", {Size = Vector2_new(1, 1), Position = Vector2_new(1, 1), Visible = false, Data = game:HttpGet("https://raw.githubusercontent.com/portallol/luna/main/Gradient.png")}),
+        Accent = newDrawing("Square", {Size = Vector2_new(2, 2), Position = Vector2_new(1, 1), Color = Color3_fromRGB(0, 111, 255), Filled = true, Visible = false})
+    },
+    Letters = {},
+    CheatName = "[osiris.cool]",
+    Index = 0,
+    tick = tick()
+}
+
+function UI:SetVisible(Visible)
+    for _, Drawing in next, self.Drawings do
+        Drawing.Visible = Visible
+    end
+    for _, Letter in next, self.Letters do
+        Letter.Visible = Visible
+    end
+end
+
+UI.Text = ""..UI.CheatName.." | FPS: {fps} | Ping: {ping}"
+
+for _ = 1, #UI.Text + 30 do
+    local Text = newDrawing("Text", {Text = "a", Size = 13, Font = 2, Visible = true, Color = Color3_fromRGB(255, 255, 255)})
+    tableInsert(UI.Letters, Text)
+end
+
+RunService.RenderStepped:Connect(function(_)
+    if UI.Drawings.Outline.Visible then
+        UI.Sizing = {}
+        if tick() - UI.tick > 0.3 then
+            local Text = UI.Text:gsub("{fps}", mathRound(1/_)):gsub("{ping}", mathRound(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())):gsub("{date}", os.date("%b. %d, %Y"))
+            UI.tick = tick()
+        end
+        UI.Index = 0
+        if Text then
+            for _, Letter in ipairs(UI.Letters) do
+                Letter.Transparency = 0
+                Letter.Position = Vector2_new(UI.Position[1] + UI.Index + 4, UI.Position[2] + Letter.TextBounds.Y / 2)
+                UI.Index = UI.Index + Letter.TextBounds.X
+            end
+            for W = 1, #Text do
+                local Character = Text:sub(W, W)
+                UI.Letters[W].Text = Character
+                UI.Letters[W].Transparency = 1
+                UI.Drawings.Outline.Size = Vector2_new(215 + W, 26)
+            end
+        end
+        UI.Drawings.Inline.Size = Vector2_new(UI.Drawings.Outline.Size.X - 2, UI.Drawings.Outline.Size.Y - 1)
+        UI.Drawings.Frame.Size = Vector2_new(UI.Drawings.Inline.Size.X - 2, UI.Drawings.Inline.Size.Y - 2)
+        UI.Drawings.Accent.Size = Vector2_new(UI.Drawings.Frame.Size.X, 1.5)
+        UI.Drawings.Outline.Position = Vector2_new(UI.Position[1], UI.Position[2])
+        UI.Drawings.Inline.Position = Vector2_new(UI.Drawings.Outline.Position.X + 1, UI.Drawings.Outline.Position.Y + 1)
+        UI.Drawings.Frame.Position = Vector2_new(UI.Drawings.Inline.Position.X + 1, UI.Drawings.Inline.Position.Y + 1)
+        UI.Drawings.Accent.Position = Vector2_new(UI.Drawings.Frame.Position.X, UI.Drawings.Frame.Position.Y)
+    end
+end)
+
+taskSpawn(function()
+    local Counter = 0
+    while true do
+        if UI.Drawings.Outline.Visible then
+            Counter = Counter + 1
+            for W, Letter in pairs(UI.Letters) do
+                if W ~= 1 and W < 13 then
+                    Letter.Color = Color3.fromHSV((Counter / 59 + W / 59) % 1, 1, 1)
+                end
+            end
+        end
+        wait()
+    end
+end)
+
+return UI
