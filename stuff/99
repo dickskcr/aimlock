@@ -1,13 +1,13 @@
 getgenv().config = {
     farm = {
-        toggle = true,
+        toggle = false,
         singleTarget = false,
-        farmPrint = true,
+        farmPrint = false,
         radius = 70,
         wait = 0.2
     },
-    autoLootbag = true,
-    autoOrb = true
+    autoLootbag = false,
+    autoOrb = false
 }
  
 repeat task.wait() until game:IsLoaded() if game.PlaceId ~= 8737899170 then game.Players.LocalPlayer:Kick("wrong game") end
